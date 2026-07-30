@@ -11,8 +11,8 @@ Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 1 — Foundation
 - **Last merged:** Feature 01 — project-scaffold
-- **In progress:** —
-- **Next up:** Feature 02 — config-management
+- **In progress:** Feature 02 — config-management
+- **Next up:** Feature 03 — webhook-receiver
 - **Total shipped:** 1 / 31
 
 ---
@@ -76,7 +76,7 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 Design choices made in shipped features that constrain future work. One line each, tagged with feature ref.
 
-- _(none yet)_
+- [F02] `pydantic-settings` is the sole config source; all modules must import `get_settings()` from `app.config` — no direct `os.environ` reads anywhere in app code.
 
 ---
 
@@ -91,7 +91,10 @@ Format:
 [F<NN>] <file path> — <what lives here>
 ```
 
-- _(none yet)_
+- [F01] `GET /health -> {"status": "ok"}` (200)
+- [F02] `app.config.get_settings() -> Settings` — call this; never read env vars directly
+- [F02] `app.config.Settings` — fields: `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_PRIVATE_KEY_PATH`, `CLAUDE_API_KEY` (all `str`, required); `REDIS_URL` (`str`, default `"redis://localhost:6379/0"`)
+- [F02] `tests/conftest.py` — autouse fixture sets dummy env vars + clears `lru_cache` after each test; all future test files inherit this automatically
 
 ---
 
