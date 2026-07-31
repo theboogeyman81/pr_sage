@@ -247,7 +247,7 @@ Receive webhook events, authenticate as a GitHub App, fetch PR diffs.
 - **Out of scope:** any actual work on the PR — just log delivery ID + repo + PR#.
 - **Accept:** all 3 tests pass · endpoint returns in <100ms locally.
 
-#### `[ ]` Feature 04 — dev-tunnel-docs
+#### `[x]` Feature 04 — dev-tunnel-docs
 - **Goal:** Document the dev tunnel setup so PRs on real repos hit the local server.
 - **In scope:** README section covering `smee.io` (or `cloudflared`) — install, start command, forwarding to `localhost:8000/webhooks/github`. GitHub App creation checklist (permissions, events, webhook secret).
 - **Out of scope:** code.

@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 2 — GitHub Integration
-- **Last merged:** Feature 03 — webhook-receiver
+- **Last merged:** Feature 04 — dev-tunnel-docs
 - **In progress:** —
-- **Next up:** Feature 04 — dev-tunnel-docs
-- **Total shipped:** 3 / 31
+- **Next up:** Feature 05 — github-app-auth
+- **Total shipped:** 4 / 31
 
 ---
 
@@ -23,9 +23,9 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 1 — Foundation (2/2 ✓)
 
-### Phase 2 — GitHub Integration (1/4)
+### Phase 2 — GitHub Integration (2/4)
 - [x] 03 — webhook-receiver
-- [ ] 04 — dev-tunnel-docs
+- [x] 04 — dev-tunnel-docs
 - [ ] 05 — github-app-auth
 - [ ] 06 — pr-diff-fetch
 
