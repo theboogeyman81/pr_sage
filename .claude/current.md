@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 1 — Foundation
-- **Last merged:** Feature 01 — project-scaffold
-- **In progress:** Feature 02 — config-management
-- **Next up:** Feature 03 — webhook-receiver
-- **Total shipped:** 1 / 31
+- **Current phase:** Phase 2 — GitHub Integration
+- **Last merged:** Feature 03 — webhook-receiver
+- **In progress:** —
+- **Next up:** Feature 04 — dev-tunnel-docs
+- **Total shipped:** 3 / 31
 
 ---
 
@@ -21,12 +21,10 @@ Everything a fresh Claude Code session needs to know in 30 seconds.
 
 Keep the current phase expanded. Compress completed phases to a single line (`N/N ✓`).
 
-### Phase 1 — Foundation (1/2)
-- [x] 01 — project-scaffold
-- [ ] 02 — config-management
+### Phase 1 — Foundation (2/2 ✓)
 
-### Phase 2 — GitHub Integration (0/4)
-- [ ] 03 — webhook-receiver
+### Phase 2 — GitHub Integration (1/4)
+- [x] 03 — webhook-receiver
 - [ ] 04 — dev-tunnel-docs
 - [ ] 05 — github-app-auth
 - [ ] 06 — pr-diff-fetch
@@ -77,6 +75,7 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 Design choices made in shipped features that constrain future work. One line each, tagged with feature ref.
 
 - [F02] `pydantic-settings` is the sole config source; all modules must import `get_settings()` from `app.config` — no direct `os.environ` reads anywhere in app code.
+- [F03] Signature verification always runs before JSON parsing — 401 must be returned before touching the payload.
 
 ---
 
@@ -95,6 +94,8 @@ Format:
 - [F02] `app.config.get_settings() -> Settings` — call this; never read env vars directly
 - [F02] `app.config.Settings` — fields: `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_PRIVATE_KEY_PATH`, `CLAUDE_API_KEY` (all `str`, required); `REDIS_URL` (`str`, default `"redis://localhost:6379/0"`)
 - [F02] `tests/conftest.py` — autouse fixture sets dummy env vars + clears `lru_cache` after each test; all future test files inherit this automatically
+- [F03] `POST /webhooks/github` → 200 (handled PR event), 204 (ignored event), 401 (bad/missing signature)
+- [F03] `app.routes.webhooks._verify_signature(secret, body, header) -> bool` — private; do not call from outside this module
 
 ---
 

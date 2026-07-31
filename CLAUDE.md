@@ -229,7 +229,7 @@ Get a boot-able FastAPI app with tests, logging, and config plumbing.
 - **Out of scope:** webhooks, GitHub, Celery, Docker.
 - **Accept:** `uvicorn app.main:app` boots · `curl /health` returns `{"status":"ok"}` 200 · `pytest` passes · logs appear on stdout.
 
-#### `[ ]` Feature 02 — config-management
+#### `[x]` Feature 02 — config-management
 - **Goal:** Centralized, validated config from env vars.
 - **In scope:** `pydantic-settings` based `Settings` class, loaded once, fails fast on missing required vars. Placeholders for `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_PRIVATE_KEY_PATH`, `CLAUDE_API_KEY`, `REDIS_URL`. Tests for required/optional handling.
 - **Out of scope:** actually using any of these values yet.
@@ -241,7 +241,7 @@ Get a boot-able FastAPI app with tests, logging, and config plumbing.
 
 Receive webhook events, authenticate as a GitHub App, fetch PR diffs.
 
-#### `[ ]` Feature 03 — webhook-receiver
+#### `[x]` Feature 03 — webhook-receiver
 - **Goal:** `POST /webhooks/github` accepts PR events with HMAC-SHA256 verified signatures.
 - **In scope:** endpoint reads raw body once, verifies `X-Hub-Signature-256` using `hmac.compare_digest`, filters to `pull_request` events with action in `{opened, synchronize, reopened}`, returns 200 fast (<1s), 401 on bad signature, 204 on ignored event. Tests: valid sig, forged sig, ignored event.
 - **Out of scope:** any actual work on the PR — just log delivery ID + repo + PR#.
