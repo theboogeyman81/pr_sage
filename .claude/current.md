@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 2 — GitHub Integration
-- **Last merged:** Feature 04 — dev-tunnel-docs
+- **Last merged:** Feature 05 — github-app-auth
 - **In progress:** —
-- **Next up:** Feature 05 — github-app-auth
-- **Total shipped:** 4 / 31
+- **Next up:** Feature 06 — pr-diff-fetch
+- **Total shipped:** 5 / 31
 
 ---
 
@@ -23,10 +23,10 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 1 — Foundation (2/2 ✓)
 
-### Phase 2 — GitHub Integration (2/4)
+### Phase 2 — GitHub Integration (3/4)
 - [x] 03 — webhook-receiver
 - [x] 04 — dev-tunnel-docs
-- [ ] 05 — github-app-auth
+- [x] 05 — github-app-auth
 - [ ] 06 — pr-diff-fetch
 
 ### Phase 3 — Async Processing (0/3)
@@ -76,6 +76,8 @@ Design choices made in shipped features that constrain future work. One line eac
 
 - [F02] `pydantic-settings` is the sole config source; all modules must import `get_settings()` from `app.config` — no direct `os.environ` reads anywhere in app code.
 - [F03] Signature verification always runs before JSON parsing — 401 must be returned before touching the payload.
+- [F05] `GitHubAppAuth` takes a PEM string (not a file path) — caller reads the file. Pattern: `GitHubAppAuth(app_id=settings.GITHUB_APP_ID, private_key=Path(settings.GITHUB_PRIVATE_KEY_PATH).read_text())`.
+- [F05] Token cache is in-memory per `GitHubAppAuth` instance; each worker process has its own cache. Cross-worker sharing deferred to Phase 3 (Celery/Redis).
 
 ---
 
@@ -96,6 +98,8 @@ Format:
 - [F02] `tests/conftest.py` — autouse fixture sets dummy env vars + clears `lru_cache` after each test; all future test files inherit this automatically
 - [F03] `POST /webhooks/github` → 200 (handled PR event), 204 (ignored event), 401 (bad/missing signature)
 - [F03] `app.routes.webhooks._verify_signature(secret, body, header) -> bool` — private; do not call from outside this module
+- [F05] `app.github.auth.GitHubAppAuth(app_id: str, private_key: str) -> None` — constructor; raises `ValueError` on bad PEM
+- [F05] `app.github.auth.GitHubAppAuth.get_installation_token(installation_id: int) -> str` — returns cached or fresh installation access token; raises `httpx.HTTPStatusError` on GitHub API failure
 
 ---
 
@@ -103,7 +107,7 @@ Format:
 
 Things left half-done, brittle, or worked around. Link to the future feature that will fix it when possible.
 
-- _(none yet)_
+- [F05→F09] `GitHubAppAuth` instance created ad-hoc; no shared singleton yet. Feature 09 (webhook-enqueue) should wire a single instance through app state or dependency injection.
 
 ---
 
