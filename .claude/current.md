@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 2 — GitHub Integration
-- **Last merged:** Feature 05 — github-app-auth
+- **Last merged:** Feature 07 — docker-compose-dev
 - **In progress:** —
-- **Next up:** Feature 06 — pr-diff-fetch
-- **Total shipped:** 5 / 31
+- **Next up:** Feature 08 — celery-scaffold
+- **Total shipped:** 7 / 31
 
 ---
 
@@ -23,14 +23,10 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 1 — Foundation (2/2 ✓)
 
-### Phase 2 — GitHub Integration (3/4)
-- [x] 03 — webhook-receiver
-- [x] 04 — dev-tunnel-docs
-- [x] 05 — github-app-auth
-- [ ] 06 — pr-diff-fetch
+### Phase 2 — GitHub Integration (4/4 ✓)
 
-### Phase 3 — Async Processing (0/3)
-- [ ] 07 — docker-compose-dev
+### Phase 3 — Async Processing (1/3)
+- [x] 07 — docker-compose-dev
 - [ ] 08 — celery-scaffold
 - [ ] 09 — webhook-enqueue
 
@@ -78,6 +74,7 @@ Design choices made in shipped features that constrain future work. One line eac
 - [F03] Signature verification always runs before JSON parsing — 401 must be returned before touching the payload.
 - [F05] `GitHubAppAuth` takes a PEM string (not a file path) — caller reads the file. Pattern: `GitHubAppAuth(app_id=settings.GITHUB_APP_ID, private_key=Path(settings.GITHUB_PRIVATE_KEY_PATH).read_text())`.
 - [F05] Token cache is in-memory per `GitHubAppAuth` instance; each worker process has its own cache. Cross-worker sharing deferred to Phase 3 (Celery/Redis).
+- [F06] `fetch_pr_diff` takes `auth: GitHubAppAuth` as a keyword-only arg — caller owns the instance and its token cache. Never constructs its own `GitHubAppAuth` internally.
 
 ---
 
@@ -100,6 +97,8 @@ Format:
 - [F03] `app.routes.webhooks._verify_signature(secret, body, header) -> bool` — private; do not call from outside this module
 - [F05] `app.github.auth.GitHubAppAuth(app_id: str, private_key: str) -> None` — constructor; raises `ValueError` on bad PEM
 - [F05] `app.github.auth.GitHubAppAuth.get_installation_token(installation_id: int) -> str` — returns cached or fresh installation access token; raises `httpx.HTTPStatusError` on GitHub API failure
+- [F06] `app.github.diff.fetch_pr_diff(repo: str, pr_number: int, installation_id: int, *, auth: GitHubAppAuth) -> str` — returns raw unified diff text
+- [F06] `app.github.exceptions.GitHubAPIError` — base; `PRNotFoundError` (404), `PRAccessDeniedError` (403), `GitHubServerError` (5xx)
 
 ---
 
@@ -107,7 +106,7 @@ Format:
 
 Things left half-done, brittle, or worked around. Link to the future feature that will fix it when possible.
 
-- [F05→F09] `GitHubAppAuth` instance created ad-hoc; no shared singleton yet. Feature 09 (webhook-enqueue) should wire a single instance through app state or dependency injection.
+- [F05+F06→F09] No shared `GitHubAppAuth` singleton yet — each call site constructs its own instance, losing the token cache across invocations. F09 (webhook-enqueue) should wire a single instance through FastAPI app state or Celery task context.
 
 ---
 
