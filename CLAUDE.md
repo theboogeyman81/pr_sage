@@ -253,13 +253,13 @@ Receive webhook events, authenticate as a GitHub App, fetch PR diffs.
 - **Out of scope:** code.
 - **Accept:** following the README from a clean laptop, Pratham can open a PR on a test repo and see the delivery hit the local server.
 
-#### `[ ]` Feature 05 — github-app-auth
+#### `[x]` Feature 05 — github-app-auth
 - **Goal:** Given `GITHUB_APP_ID`, private key, and an installation ID, produce an installation access token.
 - **In scope:** `GitHubAppAuth` class with `get_installation_token(installation_id)`. JWT signed with RS256, cached until expiry (10 min JWT, 1 hour token). Tests with a fake private key.
 - **Out of scope:** using the token yet.
 - **Accept:** returns valid-shaped token · caches (second call within TTL doesn't hit GitHub) · tests pass.
 
-#### `[ ]` Feature 06 — pr-diff-fetch
+#### `[x]` Feature 06 — pr-diff-fetch
 - **Goal:** Given a webhook event, fetch the PR's unified diff via GitHub API.
 - **In scope:** `fetch_pr_diff(repo, pr_number, installation_id)` returns the raw diff text. Uses installation token from Feature 05. Handles 404/403/5xx with typed exceptions. Tests with mocked HTTP.
 - **Out of scope:** parsing the diff.
@@ -271,19 +271,19 @@ Receive webhook events, authenticate as a GitHub App, fetch PR diffs.
 
 Move heavy work off the webhook path.
 
-#### `[ ]` Feature 07 — docker-compose-dev
+#### `[x]` Feature 07 — docker-compose-dev
 - **Goal:** `docker-compose up` brings up Redis for local dev.
 - **In scope:** `docker-compose.yml` with Redis 7 service, volume, healthcheck. README updated.
 - **Out of scope:** app in Docker (later, prod).
 - **Accept:** `docker-compose up -d` · `redis-cli ping` returns PONG.
 
-#### `[ ]` Feature 08 — celery-scaffold
+#### `[x]` Feature 08 — celery-scaffold
 - **Goal:** Celery app with a dummy task; worker starts and consumes.
 - **In scope:** `app/tasks/` package, Celery config reading `REDIS_URL` from settings, one `ping()` task that logs and returns "pong". Test that submits and awaits.
 - **Out of scope:** wiring to webhook.
 - **Accept:** `celery -A app.tasks worker` starts · `ping.delay()` executes · test passes.
 
-#### `[ ]` Feature 09 — webhook-enqueue
+#### `[x]` Feature 09 — webhook-enqueue
 - **Goal:** Webhook enqueues a task; task fetches the PR diff.
 - **In scope:** new task `review_pr(repo, pr_number, installation_id)` that calls Feature 06's fetcher and logs a summary (files changed, +/- lines). Webhook enqueues this task instead of just logging. Integration test: forged webhook → task queued → task ran (in-memory eager mode for tests).
 - **Out of scope:** actually reviewing anything.
@@ -295,13 +295,13 @@ Move heavy work off the webhook path.
 
 Understand code structure, not just text.
 
-#### `[ ]` Feature 10 — tree-sitter-python
+#### `[x]` Feature 10 — tree-sitter-python
 - **Goal:** Parse Python source into an AST and enumerate top-level defs.
 - **In scope:** `parse_python(source: str) -> list[Symbol]` returning function/class names + line ranges. Uses `tree-sitter-python`. Tests over a small fixture file.
 - **Out of scope:** cross-file resolution.
 - **Accept:** correctly identifies functions, methods, classes with accurate line ranges.
 
-#### `[ ]` Feature 11 — diff-parser
+#### `[x]` Feature 11 — diff-parser
 - **Goal:** Parse a unified diff into structured hunks per file.
 - **In scope:** `parse_diff(raw: str) -> list[FileDiff]` with `FileDiff(path, hunks: list[Hunk(old_range, new_range, lines)])`. Tests over a small fixture diff.
 - **Out of scope:** binary diffs, renames-with-content (skip cleanly).
