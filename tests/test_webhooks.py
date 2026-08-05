@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -23,15 +24,16 @@ def _sign(body: bytes) -> str:
 
 
 def test_valid_signature_handled_event():
-    response = client.post(
-        "/webhooks/github",
-        content=PR_PAYLOAD,
-        headers={
-            "X-Hub-Signature-256": _sign(PR_PAYLOAD),
-            "X-GitHub-Event": "pull_request",
-            "X-GitHub-Delivery": "abc-123",
-        },
-    )
+    with patch("app.routes.webhooks.review_pr"):
+        response = client.post(
+            "/webhooks/github",
+            content=PR_PAYLOAD,
+            headers={
+                "X-Hub-Signature-256": _sign(PR_PAYLOAD),
+                "X-GitHub-Event": "pull_request",
+                "X-GitHub-Delivery": "abc-123",
+            },
+        )
     assert response.status_code == 200
 
 

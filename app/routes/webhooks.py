@@ -6,6 +6,7 @@ import logging
 from fastapi import APIRouter, Request, Response
 
 from app.config import get_settings
+from app.tasks.review import review_pr
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -38,6 +39,8 @@ async def github_webhook(request: Request) -> Response:
     delivery_id = request.headers.get("X-GitHub-Delivery", "unknown")
     repo = payload.get("repository", {}).get("full_name", "unknown")
     pr_number = payload.get("pull_request", {}).get("number", "unknown")
+    installation_id = payload.get("installation", {}).get("id", 0)
     logger.info("pr event delivery=%s repo=%s pr=%s action=%s", delivery_id, repo, pr_number, action)
+    review_pr.delay(repo, pr_number, installation_id)
 
     return Response(status_code=200)
