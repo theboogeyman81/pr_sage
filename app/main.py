@@ -6,13 +6,15 @@ from app.config import get_settings
 from app.logging_config import configure_logging
 from app.routes.health import router as health_router
 from app.routes.webhooks import router as webhooks_router
+from app.tasks import configure_celery
 
 configure_logging()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    get_settings()
+    settings = get_settings()
+    configure_celery(settings.REDIS_URL)
     yield
 
 
