@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 4 — Code Understanding
-- **Last merged:** Feature 10 — tree-sitter-python
+- **Last merged:** Feature 11 — diff-parser
 - **In progress:** —
-- **Next up:** Feature 11 — diff-parser
-- **Total shipped:** 10 / 31
+- **Next up:** Feature 12 — hunk-to-symbol
+- **Total shipped:** 11 / 31
 
 ---
 
@@ -27,9 +27,9 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 3 — Async Processing (3/3 ✓)
 
-### Phase 4 — Code Understanding (1/4)
+### Phase 4 — Code Understanding (2/4)
 - [x] 10 — tree-sitter-python
-- [ ] 11 — diff-parser
+- [x] 11 — diff-parser
 - [ ] 12 — hunk-to-symbol
 - [ ] 13 — context-expansion
 
@@ -105,6 +105,10 @@ Format:
 - [F09] `app.tasks.review._get_auth() -> GitHubAppAuth` — lazy singleton; resolves `[F05+F06→F09]` tech debt
 - [F10] `app.parser.python.parse_python(source: str) -> list[Symbol]` — returns symbols in source order; module-level `_PARSER` is safe to import at any time
 - [F10] `app.parser.python.Symbol` — `dataclass(frozen=True)`: `name: str`, `kind: str` (`"function"|"class"`), `start_line: int`, `end_line: int` (both 1-indexed; decorated defs use decorator's line as `start_line`)
+- [F11] `app.parser.diff.parse_diff(raw: str) -> list[FileDiff]` — splits on `diff --git`, skips binary/rename sections, returns one `FileDiff` per parseable file
+- [F11] `app.parser.diff.FileDiff` — `dataclass`: `path: str`, `hunks: list[Hunk]`
+- [F11] `app.parser.diff.Hunk` — `dataclass`: `old_range: Range`, `new_range: Range`, `lines: list[str]` (each line keeps its leading `+`/`-`/` ` prefix)
+- [F11] `app.parser.diff.Range` — `dataclass`: `start: int`, `count: int` (1-indexed; new files use `Range(0, 0)` for old_range)
 
 ---
 
