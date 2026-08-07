@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 4 — Code Understanding
-- **Last merged:** Feature 12 — hunk-to-symbol
+- **Current phase:** Phase 5 — Static Analysis
+- **Last merged:** Feature 13 — context-expansion
 - **In progress:** —
-- **Next up:** Feature 13 — context-expansion
-- **Total shipped:** 12 / 31
+- **Next up:** Feature 14 — ruff-runner
+- **Total shipped:** 13 / 31
 
 ---
 
@@ -27,11 +27,7 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 3 — Async Processing (3/3 ✓)
 
-### Phase 4 — Code Understanding (3/4)
-- [x] 10 — tree-sitter-python
-- [x] 11 — diff-parser
-- [x] 12 — hunk-to-symbol
-- [ ] 13 — context-expansion
+### Phase 4 — Code Understanding (4/4 ✓)
 
 ### Phase 5 — Static Analysis (0/3)
 - [ ] 14 — ruff-runner
@@ -109,6 +105,10 @@ Format:
 - [F11] `app.parser.diff.FileDiff` — `dataclass`: `path: str`, `hunks: list[Hunk]`
 - [F11] `app.parser.diff.Hunk` — `dataclass`: `old_range: Range`, `new_range: Range`, `lines: list[str]` (each line keeps its leading `+`/`-`/` ` prefix)
 - [F11] `app.parser.diff.Range` — `dataclass`: `start: int`, `count: int` (1-indexed; new files use `Range(0, 0)` for old_range)
+- [F12] `app.parser.hunk.symbols_touched(hunk: Hunk, symbols: list[Symbol]) -> list[Symbol]` — returns symbols whose line range overlaps the hunk's new_range; returns `[]` for pure-deletion hunks (count == 0)
+- [F13] `app.github.context.ContextExpander(auth: GitHubAppAuth)` — owns per-instance `(sha, path)` cache; create one per review run
+- [F13] `ContextExpander.expand_context(repo, sha, path, symbol, installation_id, *, padding=10) -> str` — fetches file via GitHub Contents API (raw), slices symbol ± padding lines; raises `FileNotFoundAtSHA` on 404
+- [F13] `app.github.exceptions.FileNotFoundAtSHA(GitHubAPIError)` — raised when file path not found at given SHA
 
 ---
 
