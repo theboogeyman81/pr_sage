@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 6 — LLM Review
-- **Last merged:** Feature 17 — gemini-api-client
+- **Last merged:** Feature 18 — prompt-registry
 - **In progress:** —
-- **Next up:** Feature 18 — prompt-registry
-- **Total shipped:** 17 / 31
+- **Next up:** Feature 19 — review-agent-v1
+- **Total shipped:** 18 / 31
 
 ---
 
@@ -31,9 +31,9 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 5 — Static Analysis (3/3 ✓)
 
-### Phase 6 — LLM Review (1/5)
+### Phase 6 — LLM Review (2/5)
 - [x] 17 — gemini-api-client
-- [ ] 18 — prompt-registry
+- [x] 18 — prompt-registry
 - [ ] 19 — review-agent-v1
 - [ ] 20 — github-comment-poster
 - [ ] 21 — style-guide-config
@@ -119,6 +119,9 @@ Format:
 - [F17] `app.llm.GeminiClient.complete(messages, *, model, max_tokens, system=None) -> GeminiResponse` — retries 3× on rate-limit/server errors; raises `LLMRateLimitError`, `LLMServerError`, or `LLMClientError`
 - [F17] `app.llm.GeminiResponse` — `dataclass(frozen=True)`: `content: str`, `input_tokens: int`, `output_tokens: int`
 - [F17] `app.llm.exceptions` — `LLMError` (base), `LLMRateLimitError`, `LLMServerError`, `LLMClientError`
+- [F18] `app.llm.PromptRegistry(root=_PROMPTS_ROOT)` — `get(name: str, version: int) -> str`; raises `PromptNotFoundError` on missing file
+- [F18] `prompts/review/v1.md` — seed prompt with `{diff}`, `{context}`, `{findings}` slots; F19 may refine
+- [F18] `app.llm.PromptNotFoundError(LLMError)` — raised when prompt file does not exist
 
 ---
 

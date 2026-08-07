@@ -351,7 +351,7 @@ Understand code structure, not just text.
 - **Out of scope:** streaming, multimodal inputs.
 - **Accept:** 8 unit tests with mocked SDK cover success, retry, permanent-fail paths.
 
-#### `[ ]` Feature 18 — prompt-registry
+#### `[x]` Feature 18 — prompt-registry
 - **Goal:** Prompts live as versioned files, loaded by name+version.
 - **In scope:** `prompts/<name>/v<N>.md` layout. `PromptRegistry.get(name, version) -> str`. Version must be explicit at call sites — no "latest" default.
 - **Out of scope:** templating language (use Python `.format` for now).
