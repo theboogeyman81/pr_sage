@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 5 — Static Analysis
-- **Last merged:** Feature 13 — context-expansion
+- **Last merged:** Feature 14 — ruff-runner
 - **In progress:** —
-- **Next up:** Feature 14 — ruff-runner
-- **Total shipped:** 13 / 31
+- **Next up:** Feature 15 — mypy-runner
+- **Total shipped:** 14 / 31
 
 ---
 
@@ -29,8 +29,8 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 4 — Code Understanding (4/4 ✓)
 
-### Phase 5 — Static Analysis (0/3)
-- [ ] 14 — ruff-runner
+### Phase 5 — Static Analysis (1/3)
+- [x] 14 — ruff-runner
 - [ ] 15 — mypy-runner
 - [ ] 16 — analysis-aggregator
 
@@ -109,6 +109,9 @@ Format:
 - [F13] `app.github.context.ContextExpander(auth: GitHubAppAuth)` — owns per-instance `(sha, path)` cache; create one per review run
 - [F13] `ContextExpander.expand_context(repo, sha, path, symbol, installation_id, *, padding=10) -> str` — fetches file via GitHub Contents API (raw), slices symbol ± padding lines; raises `FileNotFoundAtSHA` on 404
 - [F13] `app.github.exceptions.FileNotFoundAtSHA(GitHubAPIError)` — raised when file path not found at given SHA
+- [F14] `app.analysis.finding.Finding` — `dataclass(frozen=True)`: `path: str`, `line: int`, `col: int`, `rule: str`, `message: str` — shared schema for F15 + F16
+- [F14] `app.analysis.finding.RuffError` — raised when ruff exits with code ≥ 2 or cannot be found
+- [F14] `app.analysis.ruff_runner.run_ruff(files: dict[str, str]) -> list[Finding]` — writes sources to temp dir, invokes ruff CLI, maps findings back to original path keys
 
 ---
 

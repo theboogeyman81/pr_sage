@@ -33,5 +33,6 @@ def run_ruff(files: dict[str, str]) -> list[Finding]:
                 col=item["location"]["column"],
                 rule=item["code"],
                 message=item["message"],
+                severity="error",
             ))
         return findings
