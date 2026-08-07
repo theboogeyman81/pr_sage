@@ -12,3 +12,7 @@ class PRAccessDeniedError(GitHubAPIError):
 
 class GitHubServerError(GitHubAPIError):
     """Raised on 5xx — GitHub-side failure."""
+
+
+class FileNotFoundAtSHA(GitHubAPIError):
+    """Raised on 404 — file path not found at the given commit SHA."""
