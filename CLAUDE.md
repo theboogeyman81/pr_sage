@@ -25,7 +25,7 @@ before writing code.
 - **Web:** FastAPI + Uvicorn
 - **Async jobs:** Celery + Redis
 - **GitHub auth:** GitHub App (JWT → installation token), **not** PATs
-- **LLM:** Claude API (Anthropic). Ollama as a fallback only if cost blocks progress
+- **LLM:** Gemini API (Google). Ollama as a fallback only if cost blocks progress
 - **Code parsing:** tree-sitter
 - **Static analysis:** ruff (lint), mypy (types)
 - **Container:** Docker + docker-compose for dev
@@ -345,11 +345,11 @@ Understand code structure, not just text.
 
 ### Phase 6 — LLM Review
 
-#### `[ ]` Feature 17 — claude-api-client
-- **Goal:** Robust wrapper around the Claude API.
-- **In scope:** `ClaudeClient.complete(messages, ...) -> Response` with timeout, exponential-backoff retry on 429/5xx, typed errors, response wrapper exposing tokens.
-- **Out of scope:** streaming, tool use.
-- **Accept:** unit tests with mocked httpx cover success, retry, permanent-fail paths.
+#### `[x]` Feature 17 — gemini-api-client
+- **Goal:** Robust wrapper around the Gemini API.
+- **In scope:** `GeminiClient.complete(messages, ...) -> GeminiResponse` with exponential-backoff retry on 429/5xx, typed errors (`LLMRateLimitError`, `LLMServerError`, `LLMClientError`), response wrapper exposing tokens.
+- **Out of scope:** streaming, multimodal inputs.
+- **Accept:** 8 unit tests with mocked SDK cover success, retry, permanent-fail paths.
 
 #### `[ ]` Feature 18 — prompt-registry
 - **Goal:** Prompts live as versioned files, loaded by name+version.

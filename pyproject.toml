@@ -19,6 +19,8 @@ dependencies = [
     "tree-sitter-python==0.23.2",
     "ruff==0.16.1",
     "mypy==1.16.1",
+    "google-genai==1.16.1",
+    "tenacity==9.1.2",
 ]
 
 [project.optional-dependencies]
