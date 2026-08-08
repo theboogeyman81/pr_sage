@@ -363,7 +363,7 @@ Understand code structure, not just text.
 - **Out of scope:** multi-turn agent, tool use.
 - **Accept:** on a fixture diff, produces valid-shape output · fails cleanly on malformed model output.
 
-#### `[ ]` Feature 20 — github-comment-poster
+#### `[x]` Feature 20 — github-comment-poster
 - **Goal:** Post the agent's comments back to the PR as a review.
 - **In scope:** `post_review(repo, pr_number, installation_id, comments)` using GitHub's Create Review API. One review with N comments, not N individual comments.
 - **Out of scope:** updating an existing review on `synchronize`.

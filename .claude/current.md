@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 6 — LLM Review
-- **Last merged:** Feature 19 — review-agent-v1
+- **Last merged:** Feature 20 — github-comment-poster
 - **In progress:** —
-- **Next up:** Feature 20 — github-comment-poster
-- **Total shipped:** 19 / 31
+- **Next up:** Feature 21 — style-guide-config
+- **Total shipped:** 20 / 31
 
 ---
 
@@ -31,11 +31,11 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 5 — Static Analysis (3/3 ✓)
 
-### Phase 6 — LLM Review (3/5)
+### Phase 6 — LLM Review (4/5)
 - [x] 17 — gemini-api-client
 - [x] 18 — prompt-registry
 - [x] 19 — review-agent-v1
-- [ ] 20 — github-comment-poster
+- [x] 20 — github-comment-poster
 - [ ] 21 — style-guide-config
 
 ### Phase 7 — Observability (0/3)
@@ -125,6 +125,7 @@ Format:
 - [F19] `app.llm.Comment` — Pydantic model: `path: str`, `line: int`, `body: str`, `severity: Literal["error","warning","suggestion"]`
 - [F19] `app.llm.run_review(diff, context, findings, *, client, registry, model, prompt_version=1) -> list[Comment]` — calls Gemini, parses JSON, validates; raises `ReviewError` on bad output
 - [F19] `app.llm.ReviewError(LLMError)` — raised on non-JSON or schema-invalid model response
+- [F20] `app.github.poster.post_review(repo, pr_number, installation_id, comments, *, auth) -> None` — single POST to GitHub Create Review API; no-op if comments empty; severity prepended to body as `[error]`/`[warning]`/`[suggestion]`
 
 ---
 
