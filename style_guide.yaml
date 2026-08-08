@@ -1,0 +1,7 @@
+rules:
+  - name: "type-annotations"
+    description: "All public functions must have type annotations on parameters and return value."
+  - name: "docstrings"
+    description: "All public functions and classes must have a docstring."
+  - name: "no-bare-except"
+    description: "Never use bare except: clauses; always catch a specific exception type."

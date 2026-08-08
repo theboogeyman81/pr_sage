@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 6 — LLM Review
-- **Last merged:** Feature 20 — github-comment-poster
+- **Current phase:** Phase 7 — Observability
+- **Last merged:** Feature 21 — style-guide-config
 - **In progress:** —
-- **Next up:** Feature 21 — style-guide-config
-- **Total shipped:** 20 / 31
+- **Next up:** Feature 22 — structured-logging
+- **Total shipped:** 21 / 31
 
 ---
 
@@ -31,12 +31,7 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 5 — Static Analysis (3/3 ✓)
 
-### Phase 6 — LLM Review (4/5)
-- [x] 17 — gemini-api-client
-- [x] 18 — prompt-registry
-- [x] 19 — review-agent-v1
-- [x] 20 — github-comment-poster
-- [ ] 21 — style-guide-config
+### Phase 6 — LLM Review (5/5 ✓)
 
 ### Phase 7 — Observability (0/3)
 - [ ] 22 — structured-logging
@@ -126,6 +121,9 @@ Format:
 - [F19] `app.llm.run_review(diff, context, findings, *, client, registry, model, prompt_version=1) -> list[Comment]` — calls Gemini, parses JSON, validates; raises `ReviewError` on bad output
 - [F19] `app.llm.ReviewError(LLMError)` — raised on non-JSON or schema-invalid model response
 - [F20] `app.github.poster.post_review(repo, pr_number, installation_id, comments, *, auth) -> None` — single POST to GitHub Create Review API; no-op if comments empty; severity prepended to body as `[error]`/`[warning]`/`[suggestion]`
+- [F21] `app.llm.load_style_guide(path=_DEFAULT_PATH) -> str` — reads `style_guide.yaml`, returns bullet list of rules for `{style_guide}` slot; raises `StyleGuideError` on any failure
+- [F21] `style_guide.yaml` — project-root YAML with `rules` list; edit to change prompt style rules without touching Python
+- [F21] `prompts/review/v2.md` — full prompt with `{style_guide}`, `{diff}`, `{context}`, `{findings}` slots
 
 ---
 

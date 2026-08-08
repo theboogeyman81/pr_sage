@@ -369,7 +369,7 @@ Understand code structure, not just text.
 - **Out of scope:** updating an existing review on `synchronize`.
 - **Accept:** posts a review visible on the PR with all comments attached to correct file+line.
 
-#### `[ ]` Feature 21 — style-guide-config
+#### `[x]` Feature 21 — style-guide-config
 - **Goal:** A YAML file defines review rules; contents get injected into the prompt.
 - **In scope:** `style_guide.yaml` schema, loader, injection into the review prompt (new prompt version). Example rules.
 - **Out of scope:** per-repo overrides.
