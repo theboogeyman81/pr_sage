@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 6 — LLM Review
-- **Last merged:** Feature 18 — prompt-registry
+- **Last merged:** Feature 19 — review-agent-v1
 - **In progress:** —
-- **Next up:** Feature 19 — review-agent-v1
-- **Total shipped:** 18 / 31
+- **Next up:** Feature 20 — github-comment-poster
+- **Total shipped:** 19 / 31
 
 ---
 
@@ -31,10 +31,10 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 5 — Static Analysis (3/3 ✓)
 
-### Phase 6 — LLM Review (2/5)
+### Phase 6 — LLM Review (3/5)
 - [x] 17 — gemini-api-client
 - [x] 18 — prompt-registry
-- [ ] 19 — review-agent-v1
+- [x] 19 — review-agent-v1
 - [ ] 20 — github-comment-poster
 - [ ] 21 — style-guide-config
 
@@ -122,6 +122,9 @@ Format:
 - [F18] `app.llm.PromptRegistry(root=_PROMPTS_ROOT)` — `get(name: str, version: int) -> str`; raises `PromptNotFoundError` on missing file
 - [F18] `prompts/review/v1.md` — seed prompt with `{diff}`, `{context}`, `{findings}` slots; F19 may refine
 - [F18] `app.llm.PromptNotFoundError(LLMError)` — raised when prompt file does not exist
+- [F19] `app.llm.Comment` — Pydantic model: `path: str`, `line: int`, `body: str`, `severity: Literal["error","warning","suggestion"]`
+- [F19] `app.llm.run_review(diff, context, findings, *, client, registry, model, prompt_version=1) -> list[Comment]` — calls Gemini, parses JSON, validates; raises `ReviewError` on bad output
+- [F19] `app.llm.ReviewError(LLMError)` — raised on non-JSON or schema-invalid model response
 
 ---
 

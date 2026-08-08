@@ -357,7 +357,7 @@ Understand code structure, not just text.
 - **Out of scope:** templating language (use Python `.format` for now).
 - **Accept:** load succeeds on valid name/version, raises on missing.
 
-#### `[ ]` Feature 19 — review-agent-v1
+#### `[x]` Feature 19 — review-agent-v1
 - **Goal:** Given diff, expanded context, and static findings, produce a structured review.
 - **In scope:** Pratham writes the agent loop. It calls Feature 17 with a prompt from Feature 18, gets back JSON with `list[Comment(path, line, body, severity)]`. Validated with Pydantic.
 - **Out of scope:** multi-turn agent, tool use.

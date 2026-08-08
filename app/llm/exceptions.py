@@ -16,3 +16,7 @@ class LLMClientError(LLMError):
 
 class PromptNotFoundError(LLMError):
     """Raised when the requested prompt name/version file does not exist."""
+
+
+class ReviewError(LLMError):
+    """Raised when the model response is not valid JSON or fails Comment validation."""
