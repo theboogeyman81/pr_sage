@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 2 — GitHub Integration
-- **Last merged:** Feature 07 — docker-compose-dev
+- **Current phase:** Phase 4 — Code Understanding
+- **Last merged:** Feature 10 — tree-sitter-python
 - **In progress:** —
-- **Next up:** Feature 08 — celery-scaffold
-- **Total shipped:** 7 / 31
+- **Next up:** Feature 11 — diff-parser
+- **Total shipped:** 10 / 31
 
 ---
 
@@ -25,13 +25,10 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 2 — GitHub Integration (4/4 ✓)
 
-### Phase 3 — Async Processing (1/3)
-- [x] 07 — docker-compose-dev
-- [ ] 08 — celery-scaffold
-- [ ] 09 — webhook-enqueue
+### Phase 3 — Async Processing (3/3 ✓)
 
-### Phase 4 — Code Understanding (0/4)
-- [ ] 10 — tree-sitter-python
+### Phase 4 — Code Understanding (1/4)
+- [x] 10 — tree-sitter-python
 - [ ] 11 — diff-parser
 - [ ] 12 — hunk-to-symbol
 - [ ] 13 — context-expansion
@@ -75,6 +72,8 @@ Design choices made in shipped features that constrain future work. One line eac
 - [F05] `GitHubAppAuth` takes a PEM string (not a file path) — caller reads the file. Pattern: `GitHubAppAuth(app_id=settings.GITHUB_APP_ID, private_key=Path(settings.GITHUB_PRIVATE_KEY_PATH).read_text())`.
 - [F05] Token cache is in-memory per `GitHubAppAuth` instance; each worker process has its own cache. Cross-worker sharing deferred to Phase 3 (Celery/Redis).
 - [F06] `fetch_pr_diff` takes `auth: GitHubAppAuth` as a keyword-only arg — caller owns the instance and its token cache. Never constructs its own `GitHubAppAuth` internally.
+- [F08] `celery_app` created at module level with hardcoded default broker URL — do NOT call `get_settings()` at module level in `app/tasks/`. Call `configure_celery(redis_url)` instead; `app/main.py` does this in lifespan.
+- [F09] Tests that trigger `review_pr.delay()` must patch `app.routes.webhooks.review_pr` (the whole task) to avoid Redis connection attempts. Tests that exercise the task itself use `task_always_eager = True` + mock `_get_auth` and `fetch_pr_diff`.
 
 ---
 
@@ -99,6 +98,13 @@ Format:
 - [F05] `app.github.auth.GitHubAppAuth.get_installation_token(installation_id: int) -> str` — returns cached or fresh installation access token; raises `httpx.HTTPStatusError` on GitHub API failure
 - [F06] `app.github.diff.fetch_pr_diff(repo: str, pr_number: int, installation_id: int, *, auth: GitHubAppAuth) -> str` — returns raw unified diff text
 - [F06] `app.github.exceptions.GitHubAPIError` — base; `PRNotFoundError` (404), `PRAccessDeniedError` (403), `GitHubServerError` (5xx)
+- [F08] `app.tasks.celery_app` — the Celery instance; import this to register new tasks
+- [F08] `app.tasks.configure_celery(redis_url: str) -> None` — call once at startup; already wired in `app/main.py` lifespan
+- [F08] `app.tasks.ping.ping` — registered as `"tasks.ping"`; use as template for new tasks
+- [F09] `app.tasks.review.review_pr(repo: str, pr_number: int, installation_id: int) -> None` — registered as `"tasks.review_pr"`; enqueue via `.delay()`
+- [F09] `app.tasks.review._get_auth() -> GitHubAppAuth` — lazy singleton; resolves `[F05+F06→F09]` tech debt
+- [F10] `app.parser.python.parse_python(source: str) -> list[Symbol]` — returns symbols in source order; module-level `_PARSER` is safe to import at any time
+- [F10] `app.parser.python.Symbol` — `dataclass(frozen=True)`: `name: str`, `kind: str` (`"function"|"class"`), `start_line: int`, `end_line: int` (both 1-indexed; decorated defs use decorator's line as `start_line`)
 
 ---
 
@@ -106,7 +112,7 @@ Format:
 
 Things left half-done, brittle, or worked around. Link to the future feature that will fix it when possible.
 
-- [F05+F06→F09] No shared `GitHubAppAuth` singleton yet — each call site constructs its own instance, losing the token cache across invocations. F09 (webhook-enqueue) should wire a single instance through FastAPI app state or Celery task context.
+- _(none)_
 
 ---
 
