@@ -386,8 +386,8 @@ Understand code structure, not just text.
 - **Accept:** every log line for a single PR shares one correlation ID across API + worker.
 
 #### `[ ]` Feature 23 — llm-call-tracing
-- **Goal:** Every Claude API call logs prompt-hash, tokens in/out, cost estimate, duration, correlation ID.
-- **In scope:** wrapper around Feature 17 that emits one structured log per call. Cost table for the model used.
+- **Goal:** Every Gemini API call logs prompt-hash, tokens in/out, cost estimate, duration, correlation ID.
+- **In scope:** tracing inside `GeminiClient._call` that emits one structured log per call. Cost table for the model used.
 - **Out of scope:** persistent trace DB.
 - **Accept:** trace log line per call · totals aggregatable via `jq`.
 
