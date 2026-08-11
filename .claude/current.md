@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 7 — Observability (1/3)
-- **Last merged:** Feature 22 — structured-logging
+- **Current phase:** Phase 9 — Deployment (0/4)
+- **Last merged:** Feature 27 — eval-ci
 - **In progress:** —
-- **Next up:** Feature 23 — llm-call-tracing
-- **Total shipped:** 22 / 31
+- **Next up:** Feature 28 — production-dockerfile
+- **Total shipped:** 27 / 31
 
 ---
 
@@ -33,15 +33,9 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 6 — LLM Review (5/5 ✓)
 
-### Phase 7 — Observability (1/3)
-- [x] 22 — structured-logging
-- [ ] 23 — llm-call-tracing
-- [ ] 24 — metrics-endpoint
+### Phase 7 — Observability (3/3 ✓)
 
-### Phase 8 — Evaluation (0/3)
-- [ ] 25 — eval-dataset-schema
-- [ ] 26 — eval-runner
-- [ ] 27 — eval-ci
+### Phase 8 — Evaluation (3/3 ✓)
 
 ### Phase 9 — Deployment (0/4)
 - [ ] 28 — production-dockerfile
@@ -127,6 +121,20 @@ Format:
 - [F22] All modules use `structlog.get_logger()` — no stdlib `logging.getLogger` in app code
 - [F22] `app.middleware.correlation.CorrelationMiddleware` — binds `request_id` UUID per request via `structlog.contextvars`; stashes on `request.state.request_id` for task propagation
 - [F22] `review_pr` task accepts `correlation_id: str | None` kwarg and binds it to structlog context at task start
+- [F23] `app.llm.cost_table.estimate_cost(model, input_tokens, output_tokens) -> float | None` — returns `None` for unknown models; cost table covers `gemini-2.0-flash`, `gemini-1.5-flash`, `gemini-1.5-pro`
+- [F23] `GeminiClient._call` emits `event="llm_call"` at INFO (success) or WARNING (error); fields: `model`, `prompt_hash` (16-char SHA-256 hex), `input_tokens`, `output_tokens`, `cost_usd`, `duration_ms`; `correlation_id` appears automatically via F22 contextvars
+- [F24] `app.metrics` — all prometheus_client objects live here; import from this module only (avoids duplicate registration). Counter names omit `_total` (prometheus_client appends it automatically).
+- [F24] `GET /metrics` → Prometheus text format via `generate_latest()`; `Content-Type: text/plain; version=0.0.4`
+- [F24] Multi-process aggregation (Celery worker ↔ API process) deferred to F28
+- [F25] `app.eval.schema.load_dataset(path: Path) -> list[EvalExample]` — reads JSONL, raises `EvalDatasetError("Line N: ...")` on first invalid line
+- [F25] `app.eval.schema.EvalExample` — Pydantic model: `diff: str`, `context: str`, `expected_findings: list[ExpectedFinding]`, `notes: str = ""`
+- [F25] `app.eval.schema.ExpectedFinding` — `path: str`, `line_range: tuple[int, int]` (1-indexed, start ≤ end), `category: str` (free-form)
+- [F25] `eval_data/seed.jsonl` — 3 placeholder examples; **Pratham must add ≥ 2 real labeled examples before running real evals**
+- [F26] `app.eval.runner.run_eval(dataset_path, *, model, prompt_version, output_dir) -> Path` — orchestrates agent over dataset, writes JSON report; skips examples that raise `ReviewError`
+- [F26] `app.eval.scorer.score(expected, actual) -> dict[str, CategoryResult]` — greedy location match (path + line in line_range); unmatched agent comments → `"_unmatched"` key
+- [F26] `app.eval._cost._CostAccumulator` — duck-typed wrapper; pass instead of `GeminiClient` to accumulate token costs across a run
+- [F26] CLI: `python -m app.eval.runner --dataset --model --prompt-version --output-dir`
+- [F26] Report files written to `eval_reports/<timestamp>_<model>.json` (gitignored)
 
 ---
 

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.eval._cost import _CostAccumulator
-from app.eval.runner import run_eval
+from app.eval.runner import _check_threshold, run_eval
 from app.eval.scorer import CategoryResult
 from app.llm.cost_table import estimate_cost
 from app.llm.exceptions import ReviewError
@@ -74,6 +74,16 @@ def test_skipped_examples_counted(tmp_path):
     report = json.loads(report_path.read_text())
     assert report["skipped_examples"] == 1
     assert report["total_examples"] == 1
+
+
+def test_check_threshold_passes_when_precision_above():
+    report = {"overall": {"precision": 0.8, "recall": 0.7}}
+    assert _check_threshold(report, 0.5) is True
+
+
+def test_check_threshold_fails_when_precision_below():
+    report = {"overall": {"precision": 0.3, "recall": 0.7}}
+    assert _check_threshold(report, 0.5) is False
 
 
 def test_cost_accumulator_sums_tokens():

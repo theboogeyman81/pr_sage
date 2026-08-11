@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 import structlog
 from datetime import datetime, timezone
 from pathlib import Path
@@ -85,12 +86,18 @@ def run_eval(
     return report_path
 
 
+def _check_threshold(report: dict, fail_below: float) -> bool:
+    return report["overall"]["precision"] >= fail_below
+
+
 def _main() -> None:
     parser = argparse.ArgumentParser(description="Run eval against labeled dataset")
     parser.add_argument("--dataset", default="eval_data/seed.jsonl")
     parser.add_argument("--model", default="gemini-2.0-flash")
     parser.add_argument("--prompt-version", type=int, default=2)
     parser.add_argument("--output-dir", default="eval_reports")
+    parser.add_argument("--fail-below", type=float, default=0.0,
+                        help="Exit 1 if overall precision < this value")
     args = parser.parse_args()
     path = run_eval(
         Path(args.dataset),
@@ -99,6 +106,15 @@ def _main() -> None:
         output_dir=Path(args.output_dir),
     )
     print(f"Report written to: {path}")
+    if args.fail_below > 0.0:
+        report = json.loads(path.read_text(encoding="utf-8"))
+        if not _check_threshold(report, args.fail_below):
+            precision = report["overall"]["precision"]
+            print(
+                f"FAIL: overall precision {precision:.3f} < threshold {args.fail_below}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
 
 if __name__ == "__main__":

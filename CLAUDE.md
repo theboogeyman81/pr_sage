@@ -407,13 +407,13 @@ Understand code structure, not just text.
 - **Out of scope:** eval scoring (next feature).
 - **Accept:** loader validates schema · at least 5 real examples committed.
 
-#### `[ ]` Feature 26 — eval-runner
+#### `[x]` Feature 26 — eval-runner
 - **Goal:** Run the review agent against the dataset and score it.
 - **In scope:** Pratham writes the scoring logic (precision/recall on finding location + category matches). Report table by category. Costs total.
 - **Out of scope:** LLM-judge scoring.
 - **Accept:** produces a report file per run · Pratham can compare two runs.
 
-#### `[ ]` Feature 27 — eval-ci
+#### `[x]` Feature 27 — eval-ci
 - **Goal:** Eval runs in CI on changes to prompts/ or agent code.
 - **In scope:** GitHub Actions job, uses a cheap model or subset dataset for speed. Fails CI if precision drops below a threshold.
 - **Out of scope:** perf benchmarking.

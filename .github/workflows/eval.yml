@@ -1,0 +1,44 @@
+name: eval
+
+on:
+  push:
+    paths:
+      - 'prompts/**'
+      - 'app/llm/**'
+      - 'eval_data/**'
+  pull_request:
+    paths:
+      - 'prompts/**'
+      - 'app/llm/**'
+      - 'eval_data/**'
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GITHUB_APP_ID: "ci-placeholder"
+      GITHUB_WEBHOOK_SECRET: "ci-placeholder"
+      GITHUB_PRIVATE_KEY_PATH: "/dev/null"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Run eval
+        run: |
+          python -m app.eval.runner \
+            --dataset eval_data/seed.jsonl \
+            --model gemini-2.0-flash \
+            --prompt-version 2 \
+            --output-dir eval_reports/ \
+            --fail-below 0.5
+
+      - name: Print report
+        if: always()
+        run: cat eval_reports/*.json
