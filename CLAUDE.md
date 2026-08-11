@@ -391,7 +391,7 @@ Understand code structure, not just text.
 - **Out of scope:** persistent trace DB.
 - **Accept:** trace log line per call · totals aggregatable via `jq`.
 
-#### `[ ]` Feature 24 — metrics-endpoint
+#### `[x]` Feature 24 — metrics-endpoint
 - **Goal:** `/metrics` endpoint in Prometheus format.
 - **In scope:** `prometheus-client`, counters (reviews_total, llm_calls_total, errors_total), histograms (review_duration_seconds, tokens_per_review).
 - **Out of scope:** Grafana dashboards.
