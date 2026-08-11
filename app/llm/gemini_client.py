@@ -11,6 +11,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 from app.config import get_settings
 from app.llm.cost_table import estimate_cost
 from app.llm.exceptions import LLMClientError, LLMError, LLMRateLimitError, LLMServerError
+from app.metrics import errors_total, llm_calls_total, tokens_per_review
 
 logger = structlog.get_logger()
 
@@ -66,12 +67,14 @@ class GeminiClient:
             )
         except gerrors.ServerError as exc:
             duration_ms = int((time.perf_counter() - t0) * 1000)
+            errors_total.labels(component="llm").inc()
             logger.warning("llm_call", model=model, prompt_hash=prompt_hash,
                            input_tokens=None, output_tokens=None,
                            cost_usd=None, duration_ms=duration_ms, error=str(exc))
             raise LLMServerError(str(exc)) from exc
         except gerrors.ClientError as exc:
             duration_ms = int((time.perf_counter() - t0) * 1000)
+            errors_total.labels(component="llm").inc()
             logger.warning("llm_call", model=model, prompt_hash=prompt_hash,
                            input_tokens=None, output_tokens=None,
                            cost_usd=None, duration_ms=duration_ms, error=str(exc))
@@ -80,6 +83,7 @@ class GeminiClient:
             raise LLMClientError(str(exc)) from exc
         except Exception as exc:
             duration_ms = int((time.perf_counter() - t0) * 1000)
+            errors_total.labels(component="llm").inc()
             logger.warning("llm_call", model=model, prompt_hash=prompt_hash,
                            input_tokens=None, output_tokens=None,
                            cost_usd=None, duration_ms=duration_ms, error=str(exc))
@@ -88,6 +92,8 @@ class GeminiClient:
         duration_ms = int((time.perf_counter() - t0) * 1000)
         input_tokens = response.usage_metadata.prompt_token_count
         output_tokens = response.usage_metadata.candidates_token_count
+        llm_calls_total.inc()
+        tokens_per_review.observe(input_tokens + output_tokens)
         logger.info("llm_call", model=model, prompt_hash=prompt_hash,
                     input_tokens=input_tokens, output_tokens=output_tokens,
                     cost_usd=estimate_cost(model, input_tokens, output_tokens),

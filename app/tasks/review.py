@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 import structlog
@@ -5,6 +6,7 @@ import structlog
 from app.config import get_settings
 from app.github.auth import GitHubAppAuth
 from app.github.diff import fetch_pr_diff
+from app.metrics import errors_total, review_duration_seconds, reviews_total
 from app.tasks import celery_app
 
 logger = structlog.get_logger()
@@ -42,6 +44,14 @@ def review_pr(
     structlog.contextvars.bind_contextvars(
         correlation_id=correlation_id, task="review_pr"
     )
-    diff = fetch_pr_diff(repo, pr_number, installation_id, auth=_get_auth())
-    files, added, removed = _summarize_diff(diff)
-    logger.info("diff_summary", repo=repo, pr=pr_number, files=files, added=added, removed=removed)
+    reviews_total.inc()
+    t0 = time.perf_counter()
+    try:
+        diff = fetch_pr_diff(repo, pr_number, installation_id, auth=_get_auth())
+        files, added, removed = _summarize_diff(diff)
+        logger.info("diff_summary", repo=repo, pr=pr_number, files=files, added=added, removed=removed)
+    except Exception:
+        errors_total.labels(component="review_task").inc()
+        raise
+    finally:
+        review_duration_seconds.observe(time.perf_counter() - t0)
