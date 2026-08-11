@@ -1,6 +1,5 @@
-import logging
-
 import httpx
+import structlog
 
 from app.github.auth import GitHubAppAuth
 from app.github.exceptions import GitHubServerError, PRAccessDeniedError, PRNotFoundError
@@ -12,7 +11,7 @@ _SEVERITY_LABEL = {
     "warning": "[warning]",
     "suggestion": "[suggestion]",
 }
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 
 def post_review(
@@ -58,4 +57,4 @@ def post_review(
     if response.status_code >= 500:
         raise GitHubServerError(f"GitHub server error {response.status_code}")
     response.raise_for_status()
-    logger.info("review_posted repo=%s pr=%s comments=%d", repo, pr_number, len(comments))
+    logger.info("review_posted", repo=repo, pr=pr_number, comments=len(comments))

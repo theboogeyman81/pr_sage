@@ -379,7 +379,7 @@ Understand code structure, not just text.
 
 ### Phase 7 — Observability
 
-#### `[ ]` Feature 22 — structured-logging
+#### `[x]` Feature 22 — structured-logging
 - **Goal:** Replace stdlib logging with structlog; every log line has correlation IDs.
 - **In scope:** structlog config, request ID middleware, task ID propagation into Celery.
 - **Out of scope:** log shipping (later, deploy).

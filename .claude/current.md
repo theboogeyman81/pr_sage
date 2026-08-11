@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 7 — Observability
-- **Last merged:** Feature 21 — style-guide-config
+- **Current phase:** Phase 7 — Observability (1/3)
+- **Last merged:** Feature 22 — structured-logging
 - **In progress:** —
-- **Next up:** Feature 22 — structured-logging
-- **Total shipped:** 21 / 31
+- **Next up:** Feature 23 — llm-call-tracing
+- **Total shipped:** 22 / 31
 
 ---
 
@@ -33,8 +33,8 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 6 — LLM Review (5/5 ✓)
 
-### Phase 7 — Observability (0/3)
-- [ ] 22 — structured-logging
+### Phase 7 — Observability (1/3)
+- [x] 22 — structured-logging
 - [ ] 23 — llm-call-tracing
 - [ ] 24 — metrics-endpoint
 
@@ -124,6 +124,9 @@ Format:
 - [F21] `app.llm.load_style_guide(path=_DEFAULT_PATH) -> str` — reads `style_guide.yaml`, returns bullet list of rules for `{style_guide}` slot; raises `StyleGuideError` on any failure
 - [F21] `style_guide.yaml` — project-root YAML with `rules` list; edit to change prompt style rules without touching Python
 - [F21] `prompts/review/v2.md` — full prompt with `{style_guide}`, `{diff}`, `{context}`, `{findings}` slots
+- [F22] All modules use `structlog.get_logger()` — no stdlib `logging.getLogger` in app code
+- [F22] `app.middleware.correlation.CorrelationMiddleware` — binds `request_id` UUID per request via `structlog.contextvars`; stashes on `request.state.request_id` for task propagation
+- [F22] `review_pr` task accepts `correlation_id: str | None` kwarg and binds it to structlog context at task start
 
 ---
 

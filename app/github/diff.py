@@ -1,11 +1,10 @@
-import logging
-
 import httpx
+import structlog
 
 from app.github.auth import GitHubAppAuth
 from app.github.exceptions import GitHubServerError, PRAccessDeniedError, PRNotFoundError
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 _GITHUB_API_BASE = "https://api.github.com"
 
@@ -35,5 +34,5 @@ def fetch_pr_diff(
         raise GitHubServerError(f"GitHub server error {response.status_code} for {repo} PR #{pr_number}")
     response.raise_for_status()
     diff = response.text
-    logger.info("pr_diff_fetched repo=%s pr=%s bytes=%d", repo, pr_number, len(diff))
+    logger.info("pr_diff_fetched", repo=repo, pr=pr_number, bytes=len(diff))
     return diff

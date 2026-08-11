@@ -1,11 +1,11 @@
-import logging
 from datetime import datetime, timedelta, timezone
 
 import httpx
 import jwt
+import structlog
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 _GITHUB_API_BASE = "https://api.github.com"
 _JWT_LIFETIME = timedelta(minutes=10)
@@ -52,5 +52,5 @@ class GitHubAppAuth:
         token = data["token"]
         expires_at = datetime.fromisoformat(data["expires_at"].replace("Z", "+00:00"))
         self._cache[installation_id] = (token, expires_at)
-        logger.info("installation_token installation_id=%s expires_at=%s", installation_id, expires_at)
+        logger.info("installation_token_fetched", installation_id=installation_id, expires_at=str(expires_at))
         return token

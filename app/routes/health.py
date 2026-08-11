@@ -1,9 +1,8 @@
-import logging
-
+import structlog
 from fastapi import APIRouter
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 
 @router.get("/health")
