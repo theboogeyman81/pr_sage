@@ -401,7 +401,7 @@ Understand code structure, not just text.
 
 ### Phase 8 — Evaluation
 
-#### `[ ]` Feature 25 — eval-dataset-schema
+#### `[x]` Feature 25 — eval-dataset-schema
 - **Goal:** Define the format for labeled review examples.
 - **In scope:** JSONL schema: `{diff, context, expected_findings: list[{path, line_range, category}], notes}`. Loader + validator. Seed dataset with 5–10 examples Pratham labels by hand.
 - **Out of scope:** eval scoring (next feature).

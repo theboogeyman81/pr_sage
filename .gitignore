@@ -25,3 +25,6 @@ env/
 
 # OS
 .DS_Store
+
+# eval reports
+eval_reports/*.json
