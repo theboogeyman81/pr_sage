@@ -1,0 +1,35 @@
+diff --git a/app/foo.py b/app/foo.py
+index abc1234..def5678 100644
+--- a/app/foo.py
++++ b/app/foo.py
+@@ -1,4 +1,5 @@
+ import os
++import sys
+
+ def main():
+-    pass
++    print("hello")
+diff --git a/app/new_file.py b/app/new_file.py
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/app/new_file.py
+@@ -0,0 +1,3 @@
++def greet():
++    return "hi"
++
+diff --git a/app/deleted.py b/app/deleted.py
+deleted file mode 100644
+index 2222222..0000000
+--- a/app/deleted.py
++++ /dev/null
+@@ -1,2 +0,0 @@
+-def old():
+-    pass
+diff --git a/assets/image.png b/assets/image.png
+index 3333333..4444444 100644
+Binary files a/assets/image.png and b/assets/image.png differ
+diff --git a/app/renamed.py b/app/renamed_new.py
+similarity index 100%
+rename from app/renamed.py
+rename to app/renamed_new.py
