@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 4 — Code Understanding
-- **Last merged:** Feature 11 — diff-parser
+- **Last merged:** Feature 12 — hunk-to-symbol
 - **In progress:** —
-- **Next up:** Feature 12 — hunk-to-symbol
-- **Total shipped:** 11 / 31
+- **Next up:** Feature 13 — context-expansion
+- **Total shipped:** 12 / 31
 
 ---
 
@@ -27,10 +27,10 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 3 — Async Processing (3/3 ✓)
 
-### Phase 4 — Code Understanding (2/4)
+### Phase 4 — Code Understanding (3/4)
 - [x] 10 — tree-sitter-python
 - [x] 11 — diff-parser
-- [ ] 12 — hunk-to-symbol
+- [x] 12 — hunk-to-symbol
 - [ ] 13 — context-expansion
 
 ### Phase 5 — Static Analysis (0/3)
