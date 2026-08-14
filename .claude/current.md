@@ -10,10 +10,10 @@
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
 - **Current phase:** Phase 5 — Static Analysis
-- **Last merged:** Feature 14 — ruff-runner
+- **Last merged:** Feature 15 — mypy-runner
 - **In progress:** —
-- **Next up:** Feature 15 — mypy-runner
-- **Total shipped:** 14 / 31
+- **Next up:** Feature 16 — analysis-aggregator
+- **Total shipped:** 15 / 31
 
 ---
 
@@ -29,9 +29,9 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 4 — Code Understanding (4/4 ✓)
 
-### Phase 5 — Static Analysis (1/3)
+### Phase 5 — Static Analysis (2/3)
 - [x] 14 — ruff-runner
-- [ ] 15 — mypy-runner
+- [x] 15 — mypy-runner
 - [ ] 16 — analysis-aggregator
 
 ### Phase 6 — LLM Review (0/5)
@@ -112,6 +112,9 @@ Format:
 - [F14] `app.analysis.finding.Finding` — `dataclass(frozen=True)`: `path: str`, `line: int`, `col: int`, `rule: str`, `message: str` — shared schema for F15 + F16
 - [F14] `app.analysis.finding.RuffError` — raised when ruff exits with code ≥ 2 or cannot be found
 - [F14] `app.analysis.ruff_runner.run_ruff(files: dict[str, str]) -> list[Finding]` — writes sources to temp dir, invokes ruff CLI, maps findings back to original path keys
+- [F15] `app.analysis.mypy_runner.run_mypy(files: dict[str, str]) -> list[Finding]` — same pattern as run_ruff; parses NDJSON output; drops `severity="note"` lines; uses `--ignore-missing-imports`
+- [F15] `Finding.severity: str = "error"` — added in F15; ruff findings hardcode `"error"`, mypy findings use the value from mypy's JSON output
+- [F15] `app.analysis.finding.MypyError` — raised when mypy exits with code ≥ 2
 
 ---
 
