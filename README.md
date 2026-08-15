@@ -46,50 +46,70 @@ uvicorn app.main:app --reload
 pytest
 ```
 
-## Deploying to Railway
+## Deploying to Fly.io
 
 ### Prerequisites
-- [Railway account](https://railway.app) (sign up with GitHub)
-- Railway CLI: `npm install -g @railway/cli` then `railway login`
+- [Fly.io account](https://fly.io) (sign up free)
+- flyctl CLI:
+  - Windows: `winget install -e --id Fly.io.flyctl`
+  - Mac/Linux: `curl -L https://fly.io/install.sh | sh`
+- Then: `fly auth login`
 
-### 1. Create the project
-1. Railway dashboard → **New Project** → **Deploy from GitHub repo** → select this repo
-2. Railway detects the Dockerfile automatically and creates the app service
-
-### 2. Add Redis
-Inside the project → **New** → **Database** → **Add Redis**. Railway injects `REDIS_URL` automatically into all services.
-
-### 3. Set secrets on the app service
-Go to the app service → **Variables** and add:
-
-| Variable | Value |
-|---|---|
-| `GITHUB_APP_ID` | from your GitHub App settings |
-| `GITHUB_WEBHOOK_SECRET` | the secret set when creating the app |
-| `GITHUB_PRIVATE_KEY` | paste the full `.pem` file contents (multiline is fine) |
-| `GEMINI_API_KEY` | from Google AI Studio |
-
-### 4. Add the worker service
-1. Inside the same project → **New** → **GitHub Repo** → same repo
-2. On this service → **Settings** → **Start Command**:
-   ```
-   celery -A app.tasks worker --loglevel=info
-   ```
-3. Add the same 4 variables from step 3 (`REDIS_URL` is already shared)
-
-### 5. Verify
-Both services deploy automatically on push to `main`. Check the app service URL:
+### 1. Create the app
 ```bash
-curl https://<app>.railway.app/health
+fly launch --no-deploy
+```
+When prompted, choose a name (e.g. `pr-sage`) and region. This updates `fly.toml` with your chosen name.
+
+### 2. Create Redis
+```bash
+fly redis create
+```
+Choose a name and the free Upstash plan. Copy the `REDIS_URL` from the output.
+
+### 3. Set secrets
+```bash
+fly secrets set \
+  GITHUB_APP_ID=your_app_id \
+  GITHUB_WEBHOOK_SECRET=your_webhook_secret \
+  GEMINI_API_KEY=your_gemini_key \
+  REDIS_URL=redis://...
+```
+
+For the private key (paste the full `.pem` contents):
+```bash
+# PowerShell
+fly secrets set GITHUB_PRIVATE_KEY=(Get-Content pr-sage-bot.pem -Raw)
+
+# bash/zsh
+fly secrets set GITHUB_PRIVATE_KEY="$(cat pr-sage-bot.pem)"
+```
+
+### 4. Deploy
+```bash
+fly deploy
+```
+
+### 5. Start the worker
+```bash
+fly scale count worker=1
+```
+
+### 6. Verify
+```bash
+fly status
+curl https://<your-app>.fly.dev/health
 # → {"status":"ok"}
 ```
+
+To tail logs: `fly logs`
 
 ## Connecting the GitHub App (production)
 
 Once the app is deployed and the public URL is known:
 
 1. GitHub → Settings → Developer settings → GitHub Apps → your app → **General**
-2. **Webhook URL** → `https://<app>.railway.app/webhooks/github`
+2. **Webhook URL** → `https://<your-app>.fly.dev/webhooks/github`
 3. Confirm **Webhook Secret** matches `GITHUB_WEBHOOK_SECRET`
 4. **Permissions:** Pull requests (Read & Write), Contents (Read)
 5. **Events:** Pull request
