@@ -12,6 +12,7 @@ from app.tasks import celery_app
 client = TestClient(app)
 
 _FAKE_DIFF = "diff --git a/foo.py b/foo.py\n--- a/foo.py\n+++ b/foo.py\n@@ -1 +1,2 @@\n+x = 1\n"
+_HEAD_SHA = "deadbeef"
 
 
 def _sign(body: bytes, secret: str) -> str:
@@ -30,13 +31,22 @@ def test_webhook_enqueues_review_pr():
     payload = {
         "action": "opened",
         "repository": {"full_name": "owner/repo"},
-        "pull_request": {"number": 7},
+        "pull_request": {"number": 7, "head": {"sha": _HEAD_SHA}},
         "installation": {"id": 42},
     }
     body = json.dumps(payload).encode()
 
+    mock_expander = MagicMock()
+    mock_expander._fetch_lines.return_value = ["x = 1"]
+    mock_expander.expand_context.return_value = "x = 1"
+
     with patch("app.tasks.review._get_auth", return_value=MagicMock()), \
-         patch("app.tasks.review.fetch_pr_diff", return_value=_FAKE_DIFF) as mock_fetch:
+         patch("app.tasks.review.fetch_pr_diff", return_value=_FAKE_DIFF) as mock_fetch, \
+         patch("app.tasks.review.ContextExpander", return_value=mock_expander), \
+         patch("app.tasks.review.run_ruff", return_value=[]), \
+         patch("app.tasks.review.run_review", return_value=[]) as mock_run_review, \
+         patch("app.tasks.review.post_review") as mock_post_review:
+
         response = client.post(
             "/webhooks/github",
             content=body,
@@ -51,3 +61,5 @@ def test_webhook_enqueues_review_pr():
     mock_fetch.assert_called_once_with(
         "owner/repo", 7, 42, auth=mock_fetch.call_args.kwargs["auth"]
     )
+    mock_run_review.assert_called_once()
+    mock_post_review.assert_called_once()

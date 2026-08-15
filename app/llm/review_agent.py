@@ -47,8 +47,13 @@ def run_review(
     messages = [{"role": "user", "parts": [{"text": prompt_text}]}]
     response = client.complete(messages, model=model, max_tokens=_MAX_TOKENS)
 
+    content = response.content.strip()
+    if content.startswith("```"):
+        lines = content.splitlines()
+        content = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+
     try:
-        raw = json.loads(response.content)
+        raw = json.loads(content)
     except json.JSONDecodeError as exc:
         raise ReviewError(f"Model returned non-JSON: {exc}") from exc
 

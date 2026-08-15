@@ -40,9 +40,10 @@ async def github_webhook(request: Request) -> Response:
     repo = payload.get("repository", {}).get("full_name", "unknown")
     pr_number = payload.get("pull_request", {}).get("number", "unknown")
     installation_id = payload.get("installation", {}).get("id", 0)
+    head_sha = payload.get("pull_request", {}).get("head", {}).get("sha", "")
     logger.info("pr_event", delivery=delivery_id, repo=repo, pr=pr_number, action=action)
     review_pr.delay(
-        repo, pr_number, installation_id,
+        repo, pr_number, installation_id, head_sha,
         correlation_id=getattr(request.state, "request_id", None),
     )
 

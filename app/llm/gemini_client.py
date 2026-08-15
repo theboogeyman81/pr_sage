@@ -63,6 +63,7 @@ class GeminiClient:
                 config=types.GenerateContentConfig(
                     system_instruction=system,
                     max_output_tokens=max_tokens,
+                    thinking_config=types.ThinkingConfig(thinking_budget=0),
                 ),
             )
         except gerrors.ServerError as exc:
@@ -98,8 +99,11 @@ class GeminiClient:
                     input_tokens=input_tokens, output_tokens=output_tokens,
                     cost_usd=estimate_cost(model, input_tokens, output_tokens),
                     duration_ms=duration_ms)
+        logger.debug("llm_raw_response", text=repr(response.text),
+                     candidates=len(response.candidates) if response.candidates else 0,
+                     finish_reason=str(response.candidates[0].finish_reason) if response.candidates else None)
         return GeminiResponse(
-            content=response.text,
+            content=response.text or "",
             input_tokens=input_tokens,
             output_tokens=output_tokens,
         )
