@@ -19,7 +19,7 @@ jobs:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GITHUB_APP_ID: "ci-placeholder"
       GITHUB_WEBHOOK_SECRET: "ci-placeholder"
-      GITHUB_PRIVATE_KEY_PATH: "/dev/null"
+      GITHUB_PRIVATE_KEY: "ci-placeholder"
     steps:
       - uses: actions/checkout@v4
 

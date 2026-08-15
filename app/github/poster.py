@@ -2,7 +2,11 @@ import httpx
 import structlog
 
 from app.github.auth import GitHubAppAuth
-from app.github.exceptions import GitHubServerError, PRAccessDeniedError, PRNotFoundError
+from app.github.exceptions import (
+    GitHubServerError,
+    PRAccessDeniedError,
+    PRNotFoundError,
+)
 from app.llm.review_agent import Comment
 
 _GITHUB_API_BASE = "https://api.github.com"

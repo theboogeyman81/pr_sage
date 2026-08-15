@@ -48,7 +48,7 @@ def _handle_decorated(decorated: Node, symbols: list[Symbol]) -> None:
 
 def _add_symbol(defn: Node, start_node: Node, symbols: list[Symbol]) -> None:
     name_node = defn.child_by_field_name("name")
-    if name_node is None:
+    if name_node is None or name_node.text is None:
         return
     kind = "function" if defn.type == "function_definition" else "class"
     symbols.append(Symbol(

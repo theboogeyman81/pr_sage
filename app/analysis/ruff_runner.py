@@ -21,6 +21,7 @@ def run_ruff(files: dict[str, str]) -> list[Finding]:
             ["ruff", "check", "--output-format", "json", "--no-cache", *temp_paths],
             capture_output=True,
             text=True,
+            check=False,
         )
         if result.returncode >= 2:
             raise RuffError(result.stderr)

@@ -22,6 +22,7 @@ def run_mypy(files: dict[str, str]) -> list[Finding]:
              "--no-error-summary", *temp_paths],
             capture_output=True,
             text=True,
+            check=False,
         )
         if result.returncode >= 2:
             raise MypyError(result.stderr)

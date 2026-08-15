@@ -1,9 +1,10 @@
 import argparse
 import json
 import sys
-import structlog
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+
+import structlog
 
 from app.eval._cost import _CostAccumulator
 from app.eval.schema import load_dataset
@@ -34,7 +35,8 @@ def run_eval(
         try:
             comments = run_review(
                 ex.diff, ex.context, [],
-                client=accumulator, registry=registry,
+                client=accumulator,  # type: ignore[arg-type]
+                registry=registry,
                 model=model, prompt_version=prompt_version,
             )
         except ReviewError as exc:
@@ -65,12 +67,12 @@ def run_eval(
     overall_recall    = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 1.0
 
     model_slug = model.replace("/", "-")
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     report_path = output_dir / f"{ts}_{model_slug}.json"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     report = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "model": model,
         "prompt_version": prompt_version,
         "dataset": str(dataset_path),

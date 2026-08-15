@@ -28,3 +28,6 @@ env/
 
 # eval reports
 eval_reports/*.json
+
+# private keys
+*.pem

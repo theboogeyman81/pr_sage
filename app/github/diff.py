@@ -2,7 +2,11 @@ import httpx
 import structlog
 
 from app.github.auth import GitHubAppAuth
-from app.github.exceptions import GitHubServerError, PRAccessDeniedError, PRNotFoundError
+from app.github.exceptions import (
+    GitHubServerError,
+    PRAccessDeniedError,
+    PRNotFoundError,
+)
 
 logger = structlog.get_logger()
 

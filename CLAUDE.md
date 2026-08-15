@@ -423,25 +423,25 @@ Understand code structure, not just text.
 
 ### Phase 9 — Deployment
 
-#### `[ ]` Feature 28 — production-dockerfile
+#### `[x]` Feature 28 — production-dockerfile
 - **Goal:** Multi-stage Dockerfile for app + worker (same image, different CMD).
 - **In scope:** builder stage compiles wheels, runtime stage is slim + non-root. Healthcheck. `.dockerignore`.
 - **Out of scope:** image publishing.
 - **Accept:** image builds · runs both `uvicorn` and `celery worker` from same image.
 
-#### `[ ]` Feature 29 — github-actions-ci
+#### `[x]` Feature 29 — github-actions-ci
 - **Goal:** CI runs tests + linters + type checks + a subset eval on every PR.
 - **In scope:** `.github/workflows/ci.yml`, Python matrix (just 3.11), Redis service for integration tests.
 - **Out of scope:** deploy.
 - **Accept:** PR to the bot's own repo triggers CI · failing tests block merge.
 
-#### `[ ]` Feature 30 — cloud-deploy
+#### `[x]` Feature 30 — cloud-deploy
 - **Goal:** Deploy to Fly.io (or Railway), get a public URL.
 - **In scope:** `fly.toml` (or Railway config), secrets set, app + worker + Redis deployed, health check green.
 - **Out of scope:** high availability.
 - **Accept:** public URL responds to `/health` · worker logs visible.
 
-#### `[ ]` Feature 31 — github-app-prod
+#### `[x]` Feature 31 — github-app-prod
 - **Goal:** Point the real GitHub App at the deployed URL and prove end-to-end.
 - **In scope:** update GitHub App webhook URL, install on a real test repo, open a real PR, verify review comment appears.
 - **Out of scope:** onboarding others.

@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 
 import structlog
 
@@ -31,7 +30,7 @@ def _get_auth() -> GitHubAppAuth:
         settings = get_settings()
         _auth = GitHubAppAuth(
             app_id=settings.GITHUB_APP_ID,
-            private_key=Path(settings.GITHUB_PRIVATE_KEY_PATH).read_text(),
+            private_key=settings.GITHUB_PRIVATE_KEY,
         )
     return _auth
 

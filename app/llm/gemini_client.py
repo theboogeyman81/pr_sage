@@ -3,14 +3,25 @@ import json
 import time
 from dataclasses import dataclass
 
-import google.genai as genai
 import structlog
-from google.genai import errors as gerrors, types
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from google import genai
+from google.genai import errors as gerrors
+from google.genai import types
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from app.config import get_settings
 from app.llm.cost_table import estimate_cost
-from app.llm.exceptions import LLMClientError, LLMError, LLMRateLimitError, LLMServerError
+from app.llm.exceptions import (
+    LLMClientError,
+    LLMError,
+    LLMRateLimitError,
+    LLMServerError,
+)
 from app.metrics import errors_total, llm_calls_total, tokens_per_review
 
 logger = structlog.get_logger()
@@ -59,7 +70,7 @@ class GeminiClient:
         try:
             response = self._client.models.generate_content(
                 model=model,
-                contents=messages,
+                contents=messages,  # type: ignore[arg-type]
                 config=types.GenerateContentConfig(
                     system_instruction=system,
                     max_output_tokens=max_tokens,
@@ -91,8 +102,9 @@ class GeminiClient:
             raise LLMError(str(exc)) from exc
 
         duration_ms = int((time.perf_counter() - t0) * 1000)
-        input_tokens = response.usage_metadata.prompt_token_count
-        output_tokens = response.usage_metadata.candidates_token_count
+        usage = response.usage_metadata
+        input_tokens: int = (usage.prompt_token_count or 0) if usage else 0
+        output_tokens: int = (usage.candidates_token_count or 0) if usage else 0
         llm_calls_total.inc()
         tokens_per_review.observe(input_tokens + output_tokens)
         logger.info("llm_call", model=model, prompt_hash=prompt_hash,

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import jwt
@@ -23,7 +23,7 @@ class GitHubAppAuth:
         self._cache: dict[int, tuple[str, datetime]] = {}
 
     def _make_jwt(self) -> str:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         payload = {
             "iss": self._app_id,
             "iat": int(now.timestamp()),
@@ -32,7 +32,7 @@ class GitHubAppAuth:
         return jwt.encode(payload, self._private_key, algorithm="RS256")
 
     def get_installation_token(self, installation_id: int) -> str:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if installation_id in self._cache:
             token, expires_at = self._cache[installation_id]
             if expires_at - now > _TOKEN_REFRESH_BUFFER:
@@ -50,7 +50,7 @@ class GitHubAppAuth:
         response.raise_for_status()
         data = response.json()
         token = data["token"]
-        expires_at = datetime.fromisoformat(data["expires_at"].replace("Z", "+00:00"))
+        expires_at = datetime.fromisoformat(data["expires_at"])
         self._cache[installation_id] = (token, expires_at)
         logger.info("installation_token_fetched", installation_id=installation_id, expires_at=str(expires_at))
         return token
