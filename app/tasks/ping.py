@@ -1,8 +1,8 @@
-import logging
+import structlog
 
 from app.tasks import celery_app
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 
 @celery_app.task(name="tasks.ping")

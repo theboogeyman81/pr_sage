@@ -10,7 +10,7 @@ def test_all_required_present(monkeypatch):
     assert settings.GITHUB_APP_ID == "test-app-id"
     assert settings.GITHUB_WEBHOOK_SECRET == "test-secret"
     assert settings.GITHUB_PRIVATE_KEY_PATH == "/tmp/test.pem"
-    assert settings.CLAUDE_API_KEY == "test-claude-key"
+    assert settings.GEMINI_API_KEY == "test-gemini-key"
     assert settings.REDIS_URL == "redis://custom:6380/1"
 
 

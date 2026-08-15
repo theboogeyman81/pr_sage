@@ -1,13 +1,12 @@
-import logging
-
 import httpx
+import structlog
 
 from app.github.auth import GitHubAppAuth
 from app.github.exceptions import FileNotFoundAtSHA, GitHubServerError
 from app.parser.python import Symbol
 
 _GITHUB_API_BASE = "https://api.github.com"
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 
 class ContextExpander:
@@ -54,5 +53,5 @@ class ContextExpander:
         response.raise_for_status()
         lines = response.text.splitlines()
         self._cache[key] = lines
-        logger.debug("context_fetched repo=%s sha=%.8s path=%s lines=%d", repo, sha, path, len(lines))
+        logger.debug("context_fetched", repo=repo, sha=sha[:8], path=path, lines=len(lines))
         return lines

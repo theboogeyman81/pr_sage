@@ -4,6 +4,7 @@ celery_app = Celery(
     "pr_sage",
     broker="redis://localhost:6379/0",
     backend="redis://localhost:6379/0",
+    include=["app.tasks.review"],
 )
 celery_app.conf.update(
     task_serializer="json",

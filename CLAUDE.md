@@ -25,7 +25,7 @@ before writing code.
 - **Web:** FastAPI + Uvicorn
 - **Async jobs:** Celery + Redis
 - **GitHub auth:** GitHub App (JWT → installation token), **not** PATs
-- **LLM:** Claude API (Anthropic). Ollama as a fallback only if cost blocks progress
+- **LLM:** Gemini API (Google). Ollama as a fallback only if cost blocks progress
 - **Code parsing:** tree-sitter
 - **Static analysis:** ruff (lint), mypy (types)
 - **Container:** Docker + docker-compose for dev
@@ -345,31 +345,31 @@ Understand code structure, not just text.
 
 ### Phase 6 — LLM Review
 
-#### `[ ]` Feature 17 — claude-api-client
-- **Goal:** Robust wrapper around the Claude API.
-- **In scope:** `ClaudeClient.complete(messages, ...) -> Response` with timeout, exponential-backoff retry on 429/5xx, typed errors, response wrapper exposing tokens.
-- **Out of scope:** streaming, tool use.
-- **Accept:** unit tests with mocked httpx cover success, retry, permanent-fail paths.
+#### `[x]` Feature 17 — gemini-api-client
+- **Goal:** Robust wrapper around the Gemini API.
+- **In scope:** `GeminiClient.complete(messages, ...) -> GeminiResponse` with exponential-backoff retry on 429/5xx, typed errors (`LLMRateLimitError`, `LLMServerError`, `LLMClientError`), response wrapper exposing tokens.
+- **Out of scope:** streaming, multimodal inputs.
+- **Accept:** 8 unit tests with mocked SDK cover success, retry, permanent-fail paths.
 
-#### `[ ]` Feature 18 — prompt-registry
+#### `[x]` Feature 18 — prompt-registry
 - **Goal:** Prompts live as versioned files, loaded by name+version.
 - **In scope:** `prompts/<name>/v<N>.md` layout. `PromptRegistry.get(name, version) -> str`. Version must be explicit at call sites — no "latest" default.
 - **Out of scope:** templating language (use Python `.format` for now).
 - **Accept:** load succeeds on valid name/version, raises on missing.
 
-#### `[ ]` Feature 19 — review-agent-v1
+#### `[x]` Feature 19 — review-agent-v1
 - **Goal:** Given diff, expanded context, and static findings, produce a structured review.
 - **In scope:** Pratham writes the agent loop. It calls Feature 17 with a prompt from Feature 18, gets back JSON with `list[Comment(path, line, body, severity)]`. Validated with Pydantic.
 - **Out of scope:** multi-turn agent, tool use.
 - **Accept:** on a fixture diff, produces valid-shape output · fails cleanly on malformed model output.
 
-#### `[ ]` Feature 20 — github-comment-poster
+#### `[x]` Feature 20 — github-comment-poster
 - **Goal:** Post the agent's comments back to the PR as a review.
 - **In scope:** `post_review(repo, pr_number, installation_id, comments)` using GitHub's Create Review API. One review with N comments, not N individual comments.
 - **Out of scope:** updating an existing review on `synchronize`.
 - **Accept:** posts a review visible on the PR with all comments attached to correct file+line.
 
-#### `[ ]` Feature 21 — style-guide-config
+#### `[x]` Feature 21 — style-guide-config
 - **Goal:** A YAML file defines review rules; contents get injected into the prompt.
 - **In scope:** `style_guide.yaml` schema, loader, injection into the review prompt (new prompt version). Example rules.
 - **Out of scope:** per-repo overrides.
@@ -379,19 +379,19 @@ Understand code structure, not just text.
 
 ### Phase 7 — Observability
 
-#### `[ ]` Feature 22 — structured-logging
+#### `[x]` Feature 22 — structured-logging
 - **Goal:** Replace stdlib logging with structlog; every log line has correlation IDs.
 - **In scope:** structlog config, request ID middleware, task ID propagation into Celery.
 - **Out of scope:** log shipping (later, deploy).
 - **Accept:** every log line for a single PR shares one correlation ID across API + worker.
 
-#### `[ ]` Feature 23 — llm-call-tracing
-- **Goal:** Every Claude API call logs prompt-hash, tokens in/out, cost estimate, duration, correlation ID.
-- **In scope:** wrapper around Feature 17 that emits one structured log per call. Cost table for the model used.
+#### `[x]` Feature 23 — llm-call-tracing
+- **Goal:** Every Gemini API call logs prompt-hash, tokens in/out, cost estimate, duration, correlation ID.
+- **In scope:** tracing inside `GeminiClient._call` that emits one structured log per call. Cost table for the model used.
 - **Out of scope:** persistent trace DB.
 - **Accept:** trace log line per call · totals aggregatable via `jq`.
 
-#### `[ ]` Feature 24 — metrics-endpoint
+#### `[x]` Feature 24 — metrics-endpoint
 - **Goal:** `/metrics` endpoint in Prometheus format.
 - **In scope:** `prometheus-client`, counters (reviews_total, llm_calls_total, errors_total), histograms (review_duration_seconds, tokens_per_review).
 - **Out of scope:** Grafana dashboards.
@@ -401,19 +401,19 @@ Understand code structure, not just text.
 
 ### Phase 8 — Evaluation
 
-#### `[ ]` Feature 25 — eval-dataset-schema
+#### `[x]` Feature 25 — eval-dataset-schema
 - **Goal:** Define the format for labeled review examples.
 - **In scope:** JSONL schema: `{diff, context, expected_findings: list[{path, line_range, category}], notes}`. Loader + validator. Seed dataset with 5–10 examples Pratham labels by hand.
 - **Out of scope:** eval scoring (next feature).
 - **Accept:** loader validates schema · at least 5 real examples committed.
 
-#### `[ ]` Feature 26 — eval-runner
+#### `[x]` Feature 26 — eval-runner
 - **Goal:** Run the review agent against the dataset and score it.
 - **In scope:** Pratham writes the scoring logic (precision/recall on finding location + category matches). Report table by category. Costs total.
 - **Out of scope:** LLM-judge scoring.
 - **Accept:** produces a report file per run · Pratham can compare two runs.
 
-#### `[ ]` Feature 27 — eval-ci
+#### `[x]` Feature 27 — eval-ci
 - **Goal:** Eval runs in CI on changes to prompts/ or agent code.
 - **In scope:** GitHub Actions job, uses a cheap model or subset dataset for speed. Fails CI if precision drops below a threshold.
 - **Out of scope:** perf benchmarking.

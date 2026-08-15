@@ -9,11 +9,11 @@
 
 Everything a fresh Claude Code session needs to know in 30 seconds.
 
-- **Current phase:** Phase 5 — Static Analysis
-- **Last merged:** Feature 15 — mypy-runner
+- **Current phase:** Phase 9 — Deployment (0/4)
+- **Last merged:** Feature 27 — eval-ci
 - **In progress:** —
-- **Next up:** Feature 16 — analysis-aggregator
-- **Total shipped:** 15 / 31
+- **Next up:** Feature 28 — production-dockerfile
+- **Total shipped:** 27 / 31
 
 ---
 
@@ -29,27 +29,13 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 ### Phase 4 — Code Understanding (4/4 ✓)
 
-### Phase 5 — Static Analysis (2/3)
-- [x] 14 — ruff-runner
-- [x] 15 — mypy-runner
-- [ ] 16 — analysis-aggregator
+### Phase 5 — Static Analysis (3/3 ✓)
 
-### Phase 6 — LLM Review (0/5)
-- [ ] 17 — claude-api-client
-- [ ] 18 — prompt-registry
-- [ ] 19 — review-agent-v1
-- [ ] 20 — github-comment-poster
-- [ ] 21 — style-guide-config
+### Phase 6 — LLM Review (5/5 ✓)
 
-### Phase 7 — Observability (0/3)
-- [ ] 22 — structured-logging
-- [ ] 23 — llm-call-tracing
-- [ ] 24 — metrics-endpoint
+### Phase 7 — Observability (3/3 ✓)
 
-### Phase 8 — Evaluation (0/3)
-- [ ] 25 — eval-dataset-schema
-- [ ] 26 — eval-runner
-- [ ] 27 — eval-ci
+### Phase 8 — Evaluation (3/3 ✓)
 
 ### Phase 9 — Deployment (0/4)
 - [ ] 28 — production-dockerfile
@@ -63,6 +49,7 @@ Keep the current phase expanded. Compress completed phases to a single line (`N/
 
 Design choices made in shipped features that constrain future work. One line each, tagged with feature ref.
 
+- [F17] LLM stack switched from Claude API to **Gemini API** (`google-genai==1.16.1`). `CLAUDE_API_KEY` renamed to `GEMINI_API_KEY` throughout. `google.genai.errors.ClientError`/`ServerError` are the SDK's own exception types — not `google.api_core.exceptions`.
 - [F02] `pydantic-settings` is the sole config source; all modules must import `get_settings()` from `app.config` — no direct `os.environ` reads anywhere in app code.
 - [F03] Signature verification always runs before JSON parsing — 401 must be returned before touching the payload.
 - [F05] `GitHubAppAuth` takes a PEM string (not a file path) — caller reads the file. Pattern: `GitHubAppAuth(app_id=settings.GITHUB_APP_ID, private_key=Path(settings.GITHUB_PRIVATE_KEY_PATH).read_text())`.
@@ -86,7 +73,7 @@ Format:
 
 - [F01] `GET /health -> {"status": "ok"}` (200)
 - [F02] `app.config.get_settings() -> Settings` — call this; never read env vars directly
-- [F02] `app.config.Settings` — fields: `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_PRIVATE_KEY_PATH`, `CLAUDE_API_KEY` (all `str`, required); `REDIS_URL` (`str`, default `"redis://localhost:6379/0"`)
+- [F02] `app.config.Settings` — fields: `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_PRIVATE_KEY_PATH`, `GEMINI_API_KEY` (all `str`, required); `REDIS_URL` (`str`, default `"redis://localhost:6379/0"`)
 - [F02] `tests/conftest.py` — autouse fixture sets dummy env vars + clears `lru_cache` after each test; all future test files inherit this automatically
 - [F03] `POST /webhooks/github` → 200 (handled PR event), 204 (ignored event), 401 (bad/missing signature)
 - [F03] `app.routes.webhooks._verify_signature(secret, body, header) -> bool` — private; do not call from outside this module
@@ -115,6 +102,39 @@ Format:
 - [F15] `app.analysis.mypy_runner.run_mypy(files: dict[str, str]) -> list[Finding]` — same pattern as run_ruff; parses NDJSON output; drops `severity="note"` lines; uses `--ignore-missing-imports`
 - [F15] `Finding.severity: str = "error"` — added in F15; ruff findings hardcode `"error"`, mypy findings use the value from mypy's JSON output
 - [F15] `app.analysis.finding.MypyError` — raised when mypy exits with code ≥ 2
+- [F16] `app.analysis.aggregator.aggregate(findings: list[Finding], diff: list[FileDiff]) -> list[Finding]` — keeps only findings whose `(path, line)` lands on a `+` line in the diff
+- [F16] `app.analysis.aggregator._added_lines(diff) -> dict[str, set[int]]` — builds `{path: {new-file line numbers of + lines}}`; `-` lines don't advance the counter
+- [F17] `app.llm.GeminiClient` — wraps `google-genai` SDK; create one instance per review run
+- [F17] `app.llm.GeminiClient.complete(messages, *, model, max_tokens, system=None) -> GeminiResponse` — retries 3× on rate-limit/server errors; raises `LLMRateLimitError`, `LLMServerError`, or `LLMClientError`
+- [F17] `app.llm.GeminiResponse` — `dataclass(frozen=True)`: `content: str`, `input_tokens: int`, `output_tokens: int`
+- [F17] `app.llm.exceptions` — `LLMError` (base), `LLMRateLimitError`, `LLMServerError`, `LLMClientError`
+- [F18] `app.llm.PromptRegistry(root=_PROMPTS_ROOT)` — `get(name: str, version: int) -> str`; raises `PromptNotFoundError` on missing file
+- [F18] `prompts/review/v1.md` — seed prompt with `{diff}`, `{context}`, `{findings}` slots; F19 may refine
+- [F18] `app.llm.PromptNotFoundError(LLMError)` — raised when prompt file does not exist
+- [F19] `app.llm.Comment` — Pydantic model: `path: str`, `line: int`, `body: str`, `severity: Literal["error","warning","suggestion"]`
+- [F19] `app.llm.run_review(diff, context, findings, *, client, registry, model, prompt_version=1) -> list[Comment]` — calls Gemini, parses JSON, validates; raises `ReviewError` on bad output
+- [F19] `app.llm.ReviewError(LLMError)` — raised on non-JSON or schema-invalid model response
+- [F20] `app.github.poster.post_review(repo, pr_number, installation_id, comments, *, auth) -> None` — single POST to GitHub Create Review API; no-op if comments empty; severity prepended to body as `[error]`/`[warning]`/`[suggestion]`
+- [F21] `app.llm.load_style_guide(path=_DEFAULT_PATH) -> str` — reads `style_guide.yaml`, returns bullet list of rules for `{style_guide}` slot; raises `StyleGuideError` on any failure
+- [F21] `style_guide.yaml` — project-root YAML with `rules` list; edit to change prompt style rules without touching Python
+- [F21] `prompts/review/v2.md` — full prompt with `{style_guide}`, `{diff}`, `{context}`, `{findings}` slots
+- [F22] All modules use `structlog.get_logger()` — no stdlib `logging.getLogger` in app code
+- [F22] `app.middleware.correlation.CorrelationMiddleware` — binds `request_id` UUID per request via `structlog.contextvars`; stashes on `request.state.request_id` for task propagation
+- [F22] `review_pr` task accepts `correlation_id: str | None` kwarg and binds it to structlog context at task start
+- [F23] `app.llm.cost_table.estimate_cost(model, input_tokens, output_tokens) -> float | None` — returns `None` for unknown models; cost table covers `gemini-2.0-flash`, `gemini-1.5-flash`, `gemini-1.5-pro`
+- [F23] `GeminiClient._call` emits `event="llm_call"` at INFO (success) or WARNING (error); fields: `model`, `prompt_hash` (16-char SHA-256 hex), `input_tokens`, `output_tokens`, `cost_usd`, `duration_ms`; `correlation_id` appears automatically via F22 contextvars
+- [F24] `app.metrics` — all prometheus_client objects live here; import from this module only (avoids duplicate registration). Counter names omit `_total` (prometheus_client appends it automatically).
+- [F24] `GET /metrics` → Prometheus text format via `generate_latest()`; `Content-Type: text/plain; version=0.0.4`
+- [F24] Multi-process aggregation (Celery worker ↔ API process) deferred to F28
+- [F25] `app.eval.schema.load_dataset(path: Path) -> list[EvalExample]` — reads JSONL, raises `EvalDatasetError("Line N: ...")` on first invalid line
+- [F25] `app.eval.schema.EvalExample` — Pydantic model: `diff: str`, `context: str`, `expected_findings: list[ExpectedFinding]`, `notes: str = ""`
+- [F25] `app.eval.schema.ExpectedFinding` — `path: str`, `line_range: tuple[int, int]` (1-indexed, start ≤ end), `category: str` (free-form)
+- [F25] `eval_data/seed.jsonl` — 3 placeholder examples; **Pratham must add ≥ 2 real labeled examples before running real evals**
+- [F26] `app.eval.runner.run_eval(dataset_path, *, model, prompt_version, output_dir) -> Path` — orchestrates agent over dataset, writes JSON report; skips examples that raise `ReviewError`
+- [F26] `app.eval.scorer.score(expected, actual) -> dict[str, CategoryResult]` — greedy location match (path + line in line_range); unmatched agent comments → `"_unmatched"` key
+- [F26] `app.eval._cost._CostAccumulator` — duck-typed wrapper; pass instead of `GeminiClient` to accumulate token costs across a run
+- [F26] CLI: `python -m app.eval.runner --dataset --model --prompt-version --output-dir`
+- [F26] Report files written to `eval_reports/<timestamp>_<model>.json` (gitignored)
 
 ---
 
